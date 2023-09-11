@@ -34,11 +34,11 @@ Nous avons tentee d'ecrire le shellcode dans un fichier :
 
 Ensuite, on execute le shell code en entree de la fonction level1 :
 
-	/tmp/shellcode | ./level1
+	cat /tmp/shellcode | ./level1
 
 Il faut en suite qu'on rajoute '-' avant le pipe pour rendre bloquant l'execution du buffer overflow :
 
-	/tmp/shellcode - | ./level1
+	cat /tmp/shellcode - | ./level1
 
 On execute et on s'apercoit qu'on peut ecrire des commandes sur le terminal.
 On accede a /home/user/level2 et on cat ".pass"
