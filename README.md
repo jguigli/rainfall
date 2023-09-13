@@ -46,3 +46,9 @@ Ce sont des caractéristiques de sécurité relatives à l'exécution de program
 -rwsr-x---+ 1 level1 users 747441 Mar  6  2016 level0
 
 Le caractère '+' à la fin de la ligne dans la sortie des permissions indique la présence d'attributs étendus associés à ce fichier. Les attributs étendus sont des métadonnées supplémentaires que vous pouvez attacher à un fichier pour stocker des informations supplémentaires qui ne sont pas gérées par les permissions traditionnelles de lecture, d'écriture et d'exécution.
+
+Lien format string printf :
+
+https://julianor.tripod.com/bc/formatstring-1.2.pdf
+https://repo.zenk-security.com/Techniques%20d.attaques%20%20.%20%20Failles/Les%20failles%20Format%20String.pdf
+https://axcheron.github.io/exploit-101-format-strings/
