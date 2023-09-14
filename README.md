@@ -47,6 +47,16 @@ Ce sont des caractéristiques de sécurité relatives à l'exécution de program
 
 Le caractère '+' à la fin de la ligne dans la sortie des permissions indique la présence d'attributs étendus associés à ce fichier. Les attributs étendus sont des métadonnées supplémentaires que vous pouvez attacher à un fichier pour stocker des informations supplémentaires qui ne sont pas gérées par les permissions traditionnelles de lecture, d'écriture et d'exécution.
 
+Lien ShellStorm :
+
+https://shell-storm.org/shellcode/index.html
+
+Lien bufferoverflow ret2libc :
+
+https://www.coengoedegebure.com/buffer-overflow-attacks-explained/
+https://0xrick.github.io/binary-exploitation/bof5/
+https://beta.hackndo.com/retour-a-la-libc/
+
 Lien format string printf :
 
 https://julianor.tripod.com/bc/formatstring-1.2.pdf
