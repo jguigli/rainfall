@@ -1,0 +1,99 @@
+void p(char *param_1,char *param_2)
+{
+  char *pcVar1;
+  char local_100c [4104];
+  
+  puts(param_2);
+  read(0,local_100c,0x1000);
+  pcVar1 = strchr(local_100c,10);
+  *pcVar1 = '\0';
+  strncpy(param_1,local_100c,0x14);
+  return;
+}
+
+void pp(char *param_1)
+{
+  char cVar1;
+  uint uVar2;
+  char *pcVar3;
+  byte bVar4;
+  char local_34 [20];
+  char local_20 [20];
+  
+  bVar4 = 0;
+  p(local_34,&DAT_080486a0);
+  p(local_20,&DAT_080486a0);
+  strcpy(param_1,local_34);
+  uVar2 = 0xffffffff;
+  pcVar3 = param_1;
+  do {
+    if (uVar2 == 0) break;
+    uVar2 = uVar2 - 1;
+    cVar1 = *pcVar3;
+    pcVar3 = pcVar3 + (uint)bVar4 * -2 + 1;
+  } while (cVar1 != '\0');
+  *(undefined2 *)(param_1 + (~uVar2 - 1)) = 0x20;
+  strcat(param_1,local_20);
+  return;
+}
+
+
+undefined4 main(void)
+{
+  char local_3a [54];
+  
+  pp(local_3a);
+  puts(local_3a);
+  return 0;
+}
+
+
+
+??????????????????????????????????????????????????CODE VISIBLE GPT????????????????????????????????????????????????
+
+#include <stdio.h>
+#include <string.h>
+
+void readInput(char *param_1, char *prompt) {
+  char *newline;
+  char buffer[4104];
+  
+  printf("%s", prompt);
+  read(0, buffer, 0x1000);
+  newline = strchr(buffer, 10);
+  *newline = '\0';
+  strncpy(param_1, buffer, 0x14);
+}
+
+void processInput(char *param_1) {
+  char c;
+  uint i;
+  char input1[20];
+  char input2[20];
+  
+  readInput(input1, "Enter the first input: ");
+  readInput(input2, "Enter the second input: ");
+  
+  strcpy(param_1, input1);
+  
+  i = 0xFFFFFFFF;
+  char *dest = param_1;
+  do {
+    if (i == 0) break;
+    i = i - 1;
+    c = *dest;
+    dest = dest + (uint)c * -2 + 1;
+  } while (c != '\0');
+  
+  *(undefined2 *)(param_1 + (~i - 1)) = 0x20;
+  strcat(param_1, input2);
+}
+
+int main(void) {
+  char output[54];
+  
+  processInput(output);
+  printf("Processed output: %s\n", output);
+  
+  return 0;
+}
