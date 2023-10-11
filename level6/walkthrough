@@ -25,7 +25,7 @@ Code assembleur de de la fonction n() appelé par main :
     ...
 
 Dans la fonction main, deux variable sont malloc.
-On remarque qu'il ya un strcpy qui copie le contenu de notre arguent dans la premiere variable allouee.
+On remarque qu'il ya un strcpy qui copie le contenu de notre argument dans la premiere variable allouee.
 Grace a cela on va pouvoir faire un heapoverflow pour ecraser la memoire de la deuxieme variable allouee qui est en fait un pointeur sur fonction.
 Cette fonction est appellee a la fin du main. Le but etant de mettre l'adresse de la fonction n() qui fait un /bin/cat sur le .pass de l'user level7.
 

