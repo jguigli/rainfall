@@ -38,7 +38,7 @@ Ceci est l'adresse formatté 0x08049810, dont on veux changer la valeur.
 - %16930112d : 
 Correspond à la valeur 0x01025544 en decimal qu'on veut écrire à l'adresse 0x08049810. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette mëme adresse.
 - %4$n : 
-%n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
+%n de printf permet d'écrire de la data à l'ènième adresse dans la stack indiqué par '<valeur>$'
 
 Procédure finale :
 

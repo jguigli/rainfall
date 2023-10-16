@@ -24,3 +24,10 @@ Lien HACKNDO (LOURD DE FOU):
 https://beta.hackndo.com/stack-introduction/
 https://beta.hackndo.com/memory-allocation/
 https://beta.hackndo.com/buffer-overflow/
+
+
+Encore a check :
+
+level8
+level9
+bonus2

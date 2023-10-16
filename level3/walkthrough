@@ -1,11 +1,5 @@
 ### Level3
 
-https://julianor.tripod.com/bc/formatstring-1.2.pdf
-
-https://repo.zenk-security.com/Techniques%20d.attaques%20%20.%20%20Failles/Les%20failles%20Format%20String.pdf
-
-https://axcheron.github.io/exploit-101-format-strings/
-
 Code assembleur de de la fonction v() appelé par main :
 
     ...
@@ -41,13 +35,12 @@ Shellcode finale :
 
     \x8c\x98\x04\x08%60x%4$n
 
-
 - \x8c\x98\x04\x08 : 
 Ceci est l'adresse formatté 0x804988c, dont on veux changer la valeur.
 - %60x : 
-Correspond à la valeur 64 qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette meme adresse.
+Correspond à la valeur 64 en hexa qu'on veut écrire à l'adresse 0x804988c. On enleve 4 car la taille de l'adresse compte déjà dans la valeur finale écrite à cette meme adresse.
 - %4$n : 
-%n de printf permet d'écrire de la data à l'ènième adresse indiqué par '<valeur>$'
+%n de printf permet d'écrire de la data à l'ènième adresse dans la stack indiqué par '<valeur>$'
 
 Procédure finale :
 

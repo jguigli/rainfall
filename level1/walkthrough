@@ -36,7 +36,9 @@ Ensuite, on execute le shell code en entree de la fonction level1 :
 
 	cat /tmp/shellcode | ./level1
 
-Il faut en suite qu'on rajoute '-' avant le pipe pour rendre bloquant l'execution du buffer overflow :
+Il faut en suite qu'on rajoute '-' avant le pipe.
+Le tiret - est utilisé pour indiquer que l'entrée standard (stdin) provient de l'entrée de la console.
+Elle permet de combiner la sortie d'un fichier (/tmp/shellcode dans ce cas) avec l'entrée standard (saisie au clavier) pour alimenter le programme ./level1
 
 	cat /tmp/shellcode - | ./level1
 
