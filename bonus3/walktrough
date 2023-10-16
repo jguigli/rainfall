@@ -12,7 +12,7 @@ Soit :
 	local_98[0] = '\0'
 
 Le strcmp fera une comparaison entre local_98 qui est NULL et notre argument av[1] qui est une chaine vide aussi.
-Le retour de la fonctions trcmp sera 0 et on pourra ainsi acceder au shell.
+Le retour de la fonctions strcmp sera 0 et on pourra ainsi acceder au shell.
 
 Solution :
 
