@@ -1,5 +1,4 @@
 
-
 undefined4 main(void)
 {
   char cVar1;
@@ -21,7 +20,7 @@ undefined4 main(void)
   bVar12 = 0;
   do {
     printf("%p, %p \n",auth,service);
-    pcVar2 = fgets((char *)local_90,0x80,stdin); // 128
+    pcVar2 = fgets((char *)local_90,0x80,stdin);
     bVar7 = false;
     bVar10 = pcVar2 == (char *)0x0;
     if (bVar10) {
@@ -44,7 +43,12 @@ undefined4 main(void)
       auth = (undefined4 *)malloc(4);
       *auth = 0;
       uVar4 = 0xffffffff;
-      pcVar2 = local_8b;fgets
+      pcVar2 = local_8b;
+      do {
+        if (uVar4 == 0) break;
+        uVar4 = uVar4 - 1;
+        cVar1 = *pcVar2;
+        pcVar2 = pcVar2 + (uint)bVar12 * -2 + 1;
       } while (cVar1 != '\0');
       uVar4 = ~uVar4 - 1;
       uVar8 = uVar4 < 0x1e;
@@ -52,7 +56,17 @@ undefined4 main(void)
       if (uVar4 < 0x1f) {
         strcpy((char *)auth,local_8b);
       }
-    }fgets
+    }
+    iVar3 = 5;
+    pbVar5 = local_90;
+    pbVar6 = (byte *)"reset";
+    do {
+      if (iVar3 == 0) break;
+      iVar3 = iVar3 + -1;
+      uVar8 = *pbVar5 < *pbVar6;
+      uVar11 = *pbVar5 == *pbVar6;
+      pbVar5 = pbVar5 + (uint)bVar12 * -2 + 1;
+      pbVar6 = pbVar6 + (uint)bVar12 * -2 + 1;
     } while ((bool)uVar11);
     uVar9 = 0;
     uVar8 = (!(bool)uVar8 && !(bool)uVar11) == (bool)uVar8;
@@ -60,7 +74,17 @@ undefined4 main(void)
       free(auth);
     }
     iVar3 = 6;
-    pbVar5 = local_90;fgets
+    pbVar5 = local_90;
+    pbVar6 = (byte *)"service";
+    do {
+      if (iVar3 == 0) break;
+      iVar3 = iVar3 + -1;
+      uVar9 = *pbVar5 < *pbVar6;
+      uVar8 = *pbVar5 == *pbVar6;
+      pbVar5 = pbVar5 + (uint)bVar12 * -2 + 1;
+      pbVar6 = pbVar6 + (uint)bVar12 * -2 + 1;
+    } while ((bool)uVar8);
+    uVar11 = 0;
     uVar8 = (!(bool)uVar9 && !(bool)uVar8) == (bool)uVar9;
     if ((bool)uVar8) {
       uVar11 = (byte *)0xfffffff8 < local_90;

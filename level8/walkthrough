@@ -1,5 +1,19 @@
 ### Level8
 
+Premiere etape :
+
+Le fgets present dans le programme nous permet d'ecrire un input.
+Il semble que le retour de fgets est soit compare avec "auth ", "service", "reset" ou "login".
+Si on rentre "auth " en input, le programme va allouer de 4 octets la variable 'auth' qui est une variable globale.
+En suite, il va verifier la taille du buffer local_8b[2], si elle inferieur ou egale a 30 alors, le programme fait un strcpy(auth, local_8b);
+
+Si on rentre "reset", le programme liberera la memoire de "auth"
+
+Si on rentre "service", le programme fera un strdup(acStack_89) et la variabe 'service' prendre la valeur de retour.
+
+Si on rentre "login", le programme affichera "Password:" sur stdin si auth[8] == 0 sinon il lancera un shell. C'est evidemment ce qui nous interesse.
+
+
 level8@RainFall:~$ ./level8 
 (nil), (nil) 
 auth 
@@ -15,3 +29,4 @@ $ pwd
 /home/user/level8
 $ cd /home/user/level9
 $ cat .pass
+
