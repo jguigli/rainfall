@@ -69,7 +69,7 @@ Etat de la heap apres premier strcpy :
 	0x804a030:	0x00000000	0x00000011 '0x00000000'	0x00000000
 
 Ici le premier strcpy ecrit a partir du puvar1[1], et inscrit en memoire 20 fois A, ecrasant la memoire de la 3eme allocation.
-La chaine 'BBBB' (0x42424242) est inscrit a la place du puvar3[1] anciennement l'adresse retourne par le quatrieme malloc.
+La chaine 'BBBB' (0x42424242) est inscrit a la place du puvar3[1] anciennement l'adresse retournee par le quatrieme malloc.
 Le deuxieme strcpy nous permettera d'ecrire sur l'adresse 0x42424242 dans notre exemple.
 
 Maintenant on va remplacer 'BBBB' par l'adresse de 'puts' et 'CCCC' par l'adresse de 'm'.
