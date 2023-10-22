@@ -1,35 +1,36 @@
-/* N::N(int) */
+#include <cstring.h>
+#include <unistd.h>
 
-void __thiscall N::N(N *this,int param_1)
-{
-  *(undefined ***)this = &PTR_operator+_08048848;
-  *(int *)(this + 0x68) = param_1;
-  return;
-}
+class N {
 
-void __thiscall N::setAnnotation(N *this,char *param_1)
-{
-  size_t __n;
-  
-  __n = strlen(param_1);
-  memcpy(this + 4,param_1,__n);
-  return;
-}
+	char buffer[100];
+	int number;
 
+	N(int num): number(num) {}
 
-void main(int param_1,int param_2)
-{
-  N *this;
-  undefined4 *this_00;
-  
-  if (param_1 < 2) {
-    _exit(1);
-  }
-  this = (N *)operator.new(0x6c);
-  N::N(this,5);
-  this_00 = (undefined4 *)operator.new(0x6c);
-  N::N((N *)this_00,6);
-  N::setAnnotation(this,*(char **)(param_2 + 4));
-  (**(code **)*this_00)(this_00,this); // operator+
-  return;
+	int operator+(N &arg) {
+
+		return this->number + arg._number;
+	}
+
+	void setAnnotation(char *str) {
+
+		memcpy(this->buffer, str, strlen(str));
+		return ;
+	}
+};
+
+int main(int ac, char **av) {
+
+	N *n1;
+	N *n2;
+
+	if (ac < 2) exit(1);
+
+	n1 = new N(5);
+	n2 = new N(6);
+
+	n1->setAnnotation(av[1]);
+
+	return n2->operator+(n1);
 }
