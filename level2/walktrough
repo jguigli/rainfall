@@ -16,7 +16,8 @@ Gets ne securise pas son buffer. Il est alors possible d'effectuer un bufferover
 On voit que le buffer que recoit gets() est de 76.
 Mais le code verifie que l'adresse de retour est differente de 0xbXXXXXXX. Donc on peut pas mettre directement l'adresse de system qui commence par un 0xb....
 Pour cela, on va prendre l'adresse de ret de la fonction main pour decaler l'execution directement a la fin.
-A ce moment la, sur la stack, la prochaine instruction sera la premiere adresse sur la stack. Donc dans notre shellcode, on va ecraser EIP pour mettre l'adresse de retour a la fin de la fonction main. Une fois cela notre adresse [system] [adresse de retour] [adresse /bin/sh] sur la stack sera executee.
+A ce moment la, sur la stack, la prochaine instruction sera la premiere adresse sur la stack. Donc dans notre shellcode, on va ecraser EIP pour mettre l'adresse de retour a la fin de la fonction main. 
+Une fois cela notre adresse [system] [adresse de retour] [adresse /bin/sh] sur la stack sera executee.
 
 On verifie l'offset :
 

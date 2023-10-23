@@ -1,4 +1,4 @@
-### bonus3
+### Bonus3
 
 Ce programme execute un shell selon certaines conditions. Pour cela on doit bypasser le premier if pour atterir dans le code du else. A priori le fichier que le programme ouvre ne doit pas etre NULL et il doit y avoir seulement un argument en input.
 Dans le code du else, le atoi nous interesse. Il convertie notre argument en entier.

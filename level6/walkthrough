@@ -1,6 +1,6 @@
 ### Level6
 
-Code assembleur de de la fonction n() appelé par main :
+Code assembleur de la fonction main :
 
     ...
     804848c:	e8 bf fe ff ff       	call   8048350 <malloc@plt>

